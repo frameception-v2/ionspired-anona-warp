@@ -20,19 +20,30 @@ import { base, optimism } from "wagmi/chains";
 import { useSession } from "next-auth/react";
 import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
-import { PROJECT_TITLE } from "~/lib/constants";
+import { PROJECT_TITLE, ANONA_RECOVERY_PHRASE, ANONA_USERNAME, ANONA_FID, ANONA_ADDRESS } from "~/lib/constants";
 
-function ExampleCard() {
+function UserCard() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to the Frame Template</CardTitle>
+        <CardTitle>🔒 Permanent Warpcast Session</CardTitle>
         <CardDescription>
-          This is an example card that you can customize or remove
+          Anona is always logged in through this frame
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Label>Place content in a Card here.</Label>
+      <CardContent className="space-y-2">
+        <div className="flex justify-between">
+          <Label>Username:</Label>
+          <Label className="font-mono">{ANONA_USERNAME}</Label>
+        </div>
+        <div className="flex justify-between">
+          <Label>FID:</Label>
+          <Label className="font-mono">#{ANONA_FID}</Label>
+        </div>
+        <div className="flex justify-between">
+          <Label>Address:</Label>
+          <Label className="font-mono">{truncateAddress(ANONA_ADDRESS)}</Label>
+        </div>
       </CardContent>
     </Card>
   );
@@ -41,9 +52,7 @@ function ExampleCard() {
 export default function Frame() {
   const [isSDKLoaded, setIsSDKLoaded] = useState(false);
   const [context, setContext] = useState<Context.FrameContext>();
-
   const [added, setAdded] = useState(false);
-
   const [addFrameResult, setAddFrameResult] = useState("");
 
   const addFrame = useCallback(async () => {
@@ -72,7 +81,14 @@ export default function Frame() {
       setContext(context);
       setAdded(context.client.added);
 
-      // If frame isn't already added, prompt user to add it
+      // Initialize permanent session
+      try {
+        await sdk.actions.loginWithRecoveryPhrase(ANONA_RECOVERY_PHRASE);
+        console.log("Permanent session initialized for", ANONA_USERNAME);
+      } catch (error) {
+        console.error("Failed to initialize permanent session:", error);
+      }
+
       if (!context.client.added) {
         addFrame();
       }
@@ -104,15 +120,12 @@ export default function Frame() {
       console.log("Calling ready");
       sdk.actions.ready({});
 
-      // Set up a MIPD Store, and request Providers.
       const store = createStore();
-
-      // Subscribe to the MIPD Store.
       store.subscribe((providerDetails) => {
         console.log("PROVIDER DETAILS", providerDetails);
-        // => [EIP6963ProviderDetail, EIP6963ProviderDetail, ...]
       });
     };
+    
     if (sdk && !isSDKLoaded) {
       console.log("Calling load");
       setIsSDKLoaded(true);
@@ -138,9 +151,9 @@ export default function Frame() {
     >
       <div className="w-[300px] mx-auto py-2 px-2">
         <h1 className="text-2xl font-bold text-center mb-4 text-neutral-900">
-          {PROJECT_TITLE}
+          🦇 anona-warp
         </h1>
-        <ExampleCard />
+        <UserCard />
       </div>
     </div>
   );
