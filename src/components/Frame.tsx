@@ -83,7 +83,8 @@ export default function Frame() {
 
       // Initialize permanent session
       try {
-        await sdk.actions.loginWithRecoveryPhrase(ANONA_RECOVERY_PHRASE);
+        // Updated to use correct SDK method
+        await sdk.actions.signIn({ recoveryPhrase: ANONA_RECOVERY_PHRASE });
         console.log("Permanent session initialized for", ANONA_USERNAME);
       } catch (error) {
         console.error("Failed to initialize permanent session:", error);
